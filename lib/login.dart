@@ -7,19 +7,20 @@ import 'dart:math';
 
 import 'allUtilities.dart';
 
-class Login extends StatefulWidget {
+class CustomWebView extends StatefulWidget {
   final String sourceLink;
 
-  const Login({super.key, required this.sourceLink});
+  const CustomWebView({super.key, required this.sourceLink});
 
   @override
-  _LoginState createState() => _LoginState(sourceLink: sourceLink);
+  _CustomWebViewState createState() =>
+      _CustomWebViewState(sourceLink: sourceLink);
 }
 
-class _LoginState extends State<Login> {
+class _CustomWebViewState extends State<CustomWebView> {
   final String sourceLink;
 
-  _LoginState({required this.sourceLink});
+  _CustomWebViewState({required this.sourceLink});
 
   final GlobalKey webViewKey = GlobalKey();
 
@@ -71,7 +72,7 @@ class _LoginState extends State<Login> {
 
   void handleGoBack() async {
     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) {
-      return Homepage();
+      return const Homepage();
     }));
   }
 
@@ -80,19 +81,6 @@ class _LoginState extends State<Login> {
     return Scaffold(
       body: SafeArea(
           child: Column(children: <Widget>[
-        // TextField(
-        //   decoration: const InputDecoration(prefixIcon: Icon(Icons.search)),
-        //   controller: urlController,
-        //   keyboardType: TextInputType.url,
-        //   onSubmitted: (value) async {
-        //     var url = Uri.parse(value);
-        //     if (url.scheme.isEmpty) {
-        //       url = Uri.parse("https://www.google.com/search?q=$value");
-        //     }
-        //     _webViewController?.loadUrl(urlRequest: URLRequest(url: url));
-        //     dynamic x = await _webViewController?.getUrl();
-        //   },
-        // ),
         Expanded(
           child: Stack(
             children: [
@@ -170,20 +158,20 @@ class _LoginState extends State<Login> {
                 },
                 onProgressChanged: (controller, progress) async {
                   if (urlController.text == "https://www.linkedin.com/feed/") {
-                    //todo: replace calling to this page
+                    //todo: implement regex for url matching
                     Navigator.pushAndRemoveUntil(context,
                         MaterialPageRoute(builder: (context) {
                       return const FetchDetails();
                     }), (context) => false);
                   }
-                  if (progress == 100) {
-                    pullToRefreshController.endRefreshing();
-                  }
-
-                  setState(() {
-                    this.progress = progress / 100;
-                    urlController.text = url;
-                  });
+                  // if (progress == 100) {
+                  //   pullToRefreshController.endRefreshing();
+                  // }
+                  //
+                  // setState(() {
+                  //   this.progress = progress / 100;
+                  //   urlController.text = url;
+                  // });
                 },
                 onUpdateVisitedHistory: (controller, url, androidIsReload) {
                   setState(() {
@@ -196,6 +184,7 @@ class _LoginState extends State<Login> {
               Align(
                   alignment: Alignment.bottomRight,
                   child: FloatingActionButton(
+                    backgroundColor: const Color.fromRGBO(65, 1, 590, 10),
                     onPressed: handleGoBack,
                     child: const Icon(Icons.keyboard_backspace),
                   )),

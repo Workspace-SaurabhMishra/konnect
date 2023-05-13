@@ -13,7 +13,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 @immutable
 class QRPage extends StatelessWidget {
 
-  QRPage({Key? key}) : super(key: key);
+  const QRPage({Key? key}) : super(key: key);
 
   void cameraAccess() async {
     while (Permission.camera.status != true) {
@@ -35,34 +35,27 @@ class QRPage extends StatelessWidget {
             child: BlocBuilder<LoginBloc, LoginState>(
               builder: (context, state) {
                 if (state is LoggedInState) {
-                  return Card(
-                    elevation: 20,
-                    shadowColor: Colors.white,
-                    child: QrImage(
-                      data: state.qrData,
-                      version: QrVersions.auto,
-                      size: MediaQuery.of(context).size.width * 0.7,
-                      gapless: true,
-                      embeddedImageStyle: QrEmbeddedImageStyle(
-                        size: const Size(80, 80),
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(state.qrData.toString(),style: TextStyle(color: Colors.white),),
+                      Card(
+                        elevation: 20,
+                        shadowColor: Colors.white,
+                        child: QrImage(
+                          data: state.qrData,
+                          version: QrVersions.auto,
+                          size: MediaQuery.of(context).size.width * 0.7,
+                          gapless: true,
+                          embeddedImageStyle: QrEmbeddedImageStyle(
+                            size: const Size(80, 80),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   );
-                } else if (state is ShowAppLinkQrState) {
-                  return Card(
-                    elevation: 20,
-                    shadowColor: Colors.white,
-                    child: QrImage(
-                      data: state.appLink,
-                      version: QrVersions.auto,
-                      size: MediaQuery.of(context).size.width * 0.7,
-                      gapless: true,
-                      embeddedImageStyle: QrEmbeddedImageStyle(
-                        size: const Size(80, 80),
-                      ),
-                    ),
-                  );
-                } else {
+                }
+                else {
                   return Blur(
                     blur: 5,
                     blurColor: Colors.black26,
@@ -97,7 +90,7 @@ class QRPage extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                              return const Login(
+                              return const CustomWebView(
                                   sourceLink: "https://linkedin.com/login");
                             }));
                       },

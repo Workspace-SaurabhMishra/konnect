@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:konnect/QRPage.dart';
-import 'package:konnect/molecules/drawer.dart';
 import 'package:konnect/scanner.dart';
 import 'package:konnect/screens/Profile.dart';
 import 'package:konnect/screens/Settings.dart';
@@ -65,10 +64,10 @@ class _HomepageState extends State<Homepage> {
                 ]),
                 SizedBox(
                   height: MediaQuery.of(context).size.height - 158,
-                  child: TabBarView(
+                  child: const TabBarView(
                     children: [
                       QRPage(),
-                      const ScannerPage(),
+                      ScannerPage(),
                     ],
                   ),
                 ),

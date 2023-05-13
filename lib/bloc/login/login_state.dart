@@ -38,31 +38,3 @@ class NewLogInState implements LoginState{
 
 }
 
-class EndingLoginState implements LoginState{
-  const EndingLoginState();
-
-  @override
-  // TODO: implement props
-  List<Object?> get props => throw UnimplementedError();
-
-  @override
-  // TODO: implement stringify
-  bool? get stringify => throw UnimplementedError();
-
-}
-
-class ShowAppLinkQrState implements LoginState{
-  final String appLink;
-
-  const ShowAppLinkQrState({required this.appLink});
-
-  @override
-  // TODO: implement props
-  List<Object?> get props => throw UnimplementedError();
-
-  @override
-  // TODO: implement stringify
-  bool? get stringify => throw UnimplementedError();
-
-}
-

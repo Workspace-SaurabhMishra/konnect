@@ -33,28 +33,6 @@ class _ScannerPageState extends State<ScannerPage> {
     }
   }
 
-  void capture() async {
-    qrController?.scannedDataStream.listen((data) async {
-      // setState(() {
-      //   qrData = data;
-      // });
-
-      dynamic decodeData = json.decode(data.code.toString());
-      String receiverEmail = decodeData["email"];
-      String receiverLinkedInUrl = decodeData["linked_url"];
-      qrController!.pauseCamera();
-
-      Future.delayed(const Duration(seconds: 0), () {
-        Navigator.of(context)
-            .pushReplacement(MaterialPageRoute(builder: (context) {
-          return Login(sourceLink: receiverLinkedInUrl);
-        }));
-      });
-
-      // await SendEmail(receiverEmail,receiverLinkedInurl);
-    });
-  }
-
   void onQRViewCreated(controller) {
     setState(() {
       qrController = controller;
@@ -62,12 +40,13 @@ class _ScannerPageState extends State<ScannerPage> {
 
     qrController?.scannedDataStream.listen((data) async {
       dynamic decodeData = json.decode(data.code.toString());
-      String receiverLinkedInUrl = decodeData["linked_url"];
+      String receiverLinkedInUrl = decodeData["urn"]; //todo: replace with urn
       Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder: (context) {
-        return Login(sourceLink: receiverLinkedInUrl);
+          .push(MaterialPageRoute(builder: (context) {
+        return CustomWebView(sourceLink: receiverLinkedInUrl);
       }));
       qrController!.pauseCamera();
+      Future.delayed(const Duration(seconds: 2),() => qrController!.resumeCamera());
     });
   }
 
@@ -75,16 +54,13 @@ class _ScannerPageState extends State<ScannerPage> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => LoginBloc(),
-      child: InkWell(
-        onTap: capture,
-        child: QRView(
-          key: qrKey,
-          onQRViewCreated: onQRViewCreated,
-          overlay: QrScannerOverlayShape(
-            borderRadius: 10,
-            cutOutSize: MediaQuery.of(context).size.width * 0.8,
-            borderColor: Colors.deepPurple,
-          ),
+      child: QRView(
+        key: qrKey,
+        onQRViewCreated: onQRViewCreated,
+        overlay: QrScannerOverlayShape(
+          borderRadius: 10,
+          cutOutSize: MediaQuery.of(context).size.width * 0.8,
+          borderColor: Colors.deepPurple,
         ),
       ),
     );

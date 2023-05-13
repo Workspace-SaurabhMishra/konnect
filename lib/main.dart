@@ -9,7 +9,7 @@ import 'allUtilities.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await storage.write(key: "login_status",value: null);
+  // await storage.write(key: "login_status",value: null);
 
 
   if (Platform.isAndroid) {

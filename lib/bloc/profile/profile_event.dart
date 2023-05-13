@@ -1,10 +1,10 @@
-part of 'login_bloc.dart';
+part of 'profile_bloc.dart';
 
-abstract class LoginEvent extends Equatable {
-  const LoginEvent();
+abstract class ProfileEvent extends Equatable {
+  const ProfileEvent();
 }
 
-class IsLoggedInEvent implements LoginEvent{
+class VerifyLoginEvent implements ProfileEvent{
   @override
   // TODO: implement props
   List<Object?> get props => throw UnimplementedError();

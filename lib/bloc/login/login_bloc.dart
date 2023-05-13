@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
@@ -17,32 +16,16 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         emit(const NewLogInState());
       }
       else{
-        String? urn = await storage.read(key: "login_urn");
-        String? email = await storage.read(key: "login_email");
-
-        String data = jsonEncode({"email":email,"linked_url":urn});
+        String? urn = await storage.read(key: "urn");
+        // String? name = await storage.read(key: "user_name");
+        // String? designation = await storage.read(key: "user_designation");
+        // String? imageUrl = await storage.read(key: "user_image_url");
+        String data = jsonEncode({
+          "urn":urn,
+        });
 
        emit(LoggedInState(qrData:data));
       }
     });
-
-    on<EndingLoginEvent>((event,emit) async{
-      emit(EndingLoginState());
-      Future.delayed(Duration(seconds: 2),() async{
-        add(SuccessfulLoginEvent());
-      });
-    });
-
-    on<SuccessfulLoginEvent>((event, emit) async{
-      // storage.write(key: "login_status", value: "true");
-    });
-
-
-    on<ShowAppLinkQrEvent>((event, emit) async{
-      emit(ShowAppLinkQrState(appLink: event.appLink));
-    });
-
-
-
   }
 }

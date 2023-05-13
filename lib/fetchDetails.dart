@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:konnect/QRPage.dart';
 import 'package:konnect/allUtilities.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -22,18 +20,18 @@ class _FetchDetailsState extends State<FetchDetails> {
   late InAppWebViewController webViewController;
   InAppWebViewGroupOptions options = InAppWebViewGroupOptions(
       crossPlatform: InAppWebViewOptions(
-        javaScriptCanOpenWindowsAutomatically: true,
-        userAgent: "random",
-        useShouldOverrideUrlLoading: true,
-        mediaPlaybackRequiresUserGesture: false,
-      ));
+    javaScriptCanOpenWindowsAutomatically: true,
+    userAgent: "random",
+    useShouldOverrideUrlLoading: true,
+    mediaPlaybackRequiresUserGesture: false,
+  ));
   bool finishingValue = false;
 
   late PullToRefreshController pullToRefreshController;
   final urlController = TextEditingController();
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     // pullToRefreshController = PullToRefreshController(
     //   options: PullToRefreshOptions(
@@ -51,16 +49,15 @@ class _FetchDetailsState extends State<FetchDetails> {
 
     headlessWebView = HeadlessInAppWebView(
       initialUrlRequest: URLRequest(
-        //todo: no need of email fetching, so replace email url to photo or email url
+          //todo: no need of email fetching, so replace email url to photo
           url: Uri.parse(
-              "https://www.linkedin.com/psettings/email?li_theme=dark&openInMobileMode=false")),
+              "https://www.linkedin.com/public-profile/settings?trk=d_flagship3_profile_self_view_public_profile")),
       initialOptions: options,
       // pullToRefreshController: pullToRefreshController,
       onWebViewCreated: (controller) {
         webViewController = controller;
       },
       onCreateWindow: (controller, createWindowAction) async {
-
         showDialog(
           context: context,
           builder: (context) {
@@ -105,46 +102,70 @@ class _FetchDetailsState extends State<FetchDetails> {
         var uri = navigationAction.request.url!;
 
         if (!["http", "https", "file", "chrome", "data", "javascript", "about"]
-            .contains(uri.scheme)) {
-        }
+            .contains(uri.scheme)) {}
 
         return NavigationActionPolicy.ALLOW;
       },
       onProgressChanged: (controller, progress) async {
         if (urlController.text ==
-                "https://www.linkedin.com/psettings/email?li_theme=dark&openInMobileMode=false" &&
+                "https://www.linkedin.com/public-profile/settings?trk=d_flagship3_profile_self_view_public_profile" &&
             progress == 100) {
-          webViewController.loadUrl(
-              urlRequest: URLRequest(
-                  url: Uri.parse(
-                      "https://www.linkedin.com/public-profile/settings?trk=d_flagship3_profile_self_view_public_profile")));
-          Future.delayed(const Duration(seconds: 1), () async {
-            var urn = await webViewController.evaluateJavascript(
-                source:
-                    '''document.querySelector('#vanityUrlForm').value;''');
+          Future.delayed(const Duration(seconds: 0), () async {
+            var urn = (await webViewController.evaluateJavascript(
+                source: '''document.querySelector('#vanityUrlForm').value;''')).toString().trim().replaceAll("\n", "");
             await storage.write(
-                key: "login_urn", value: "https://www.linkedin.com/in/$urn");
+                key: "urn", value: "https://www.linkedin.com/in/$urn");
 
-            if (storage.read(key: "login_urn") != null &&
-                storage.read(key: "login_email") != null) {
-              storage.write(key: "login_status",value: "true");
-              headlessWebView.dispose();
-              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
+            var name = (await webViewController.evaluateJavascript(
+                source:
+                    '''document.evaluate('/html/body/main/section[1]/div/section[2]/section[1]/div/div[2]/div[1]/h1', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.textContent;''')).toString().trim().replaceAll("\n", "");
+            await storage.write(key: "user_name", value: name);
+
+            var designation = (await webViewController.evaluateJavascript(
+                source:
+                    '''document.querySelector('.profile-section-card__title:first-of-type').textContent;''')).toString().trim().replaceAll("\n", "");
+            await storage.write(
+                key: "user_designation", value: designation);
+
+            var imageUrl = (await webViewController.evaluateJavascript(
+                source:
+                    '''document.evaluate('/html/body/main/section[1]/div/section[2]/section[1]/div/div[1]/img[1]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.getAttribute('src');''')).toString().trim().replaceAll("\n", "");
+
+            await storage.write(key: "user_image_url", value: imageUrl);
+
+            var follower = (await webViewController.evaluateJavascript(
+                source:
+                '''document.evaluate('/html/body/main/section[1]/div/section[2]/section[1]/div/div[2]/div[1]/h3/span[1]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.textContent;''')).toString().trim().replaceAll("\n", "");
+
+            await storage.write(key: "user_follower", value: follower);
+
+            var connection = (await webViewController.evaluateJavascript(
+                source:
+                '''document.evaluate('/html/body/main/section[1]/div/section[2]/section[1]/div/div[2]/div[1]/h3/span[2]/text()', document, null, XPathResult.STRING_TYPE, null).stringValue.trim();''')).toString().trim().replaceAll("\n", "");
+
+            await storage.write(key: "user_connection", value: connection);
+
+
+            if (await storage.read(key: "urn") != null &&
+                await storage.read(key: "user_name") != null &&
+                await storage.read(key: "user_designation") != null &&
+                await storage.read(key: "user_image_url") != null
+            ) {
+              await storage.write(key: "login_status",value: "true");
+              Navigator.pushAndRemoveUntil(context,
+                  MaterialPageRoute(builder: (context) {
                 return Homepage();
-              }),(context) => false);
+              }), (context) => false);
             }
           });
         }
       },
       onUpdateVisitedHistory: (controller, url, androidIsReload) {
-        // setState(() {
-        //   url1 = url.toString();
-        //   urlController.text = url1;
-        // });
       },
-      onConsoleMessage: (controller, consoleMessage) {
-      },
-    )..dispose()..run();
+      onConsoleMessage: (controller, consoleMessage) {},
+    )
+      ..dispose()
+      ..run();
   }
 
   @override
@@ -155,37 +176,33 @@ class _FetchDetailsState extends State<FetchDetails> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-          body: Container(
-                    height: MediaQuery.of(context).size.height,
-                    width: MediaQuery.of(context).size.width,
-                    decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color.fromRGBO(0, 0, 31, 10),
-                        Color.fromRGBO(65, 1, 590, 10)
-                      ],
-                    )),
-                    child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const <Widget>[
-                                SizedBox(
-                                  height: 200,
-                                  child: SpinKitRipple(
-                                    size: 100,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                Text(
-                                  "Just Some More Time",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 19,
-                                      fontWeight: FontWeight.w200
-                                  ),
-                                ),
-                          ]),
-                  ));
+        body: Container(
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width,
+      decoration: const BoxDecoration(
+          gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color.fromRGBO(0, 0, 31, 10), Color.fromRGBO(65, 1, 590, 10)],
+      )),
+      child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const <Widget>[
+            SizedBox(
+              height: 200,
+              child: SpinKitRipple(
+                size: 100,
+                color: Colors.white,
+              ),
+            ),
+            Text(
+              "Just Some More Time",
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w200),
+            ),
+          ]),
+    ));
   }
 }

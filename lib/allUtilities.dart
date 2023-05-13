@@ -11,7 +11,7 @@ SendEmail(receiverEmail,receiverLinkedInurl) async{
   String username = 'saurabh9759mishra@gmail.com';
   String password = 'qrqbdrjmhnnonhul'; //Must use G_Oauth.
 
-  String? senderLinkedInUrl = await storage.read(key: "login_urn");
+  String? senderLinkedInUrl = await storage.read(key: "urn");
 
   final smtpServer = gmail(username,password);
   final receiversMessage = Message()
